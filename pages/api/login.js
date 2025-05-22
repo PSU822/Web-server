@@ -9,8 +9,8 @@ export default async function handler(req, res) {
     allowedMethods: ["POST"],
     requireBody: true,
   });
-  if (!request_result.success) {
-    console.log(`요청 실패 : ${request_result.statusCode}`);
+  if (!request_result) {
+    console.log(`로그인 요청 실패`);
     return;
   }
   const { userId, password } = req.body;
