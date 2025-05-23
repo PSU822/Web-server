@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../generated/prisma";
 import { checkRequest } from "./api-utils";
 import cookie from "cookie";
 
@@ -13,6 +13,7 @@ export default async function handler(req, res) {
     console.log(`로그인 요청 실패`);
     return;
   }
+
   const { userId, password } = req.body;
 
   if (!userId || !password) {
