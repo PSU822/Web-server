@@ -1,5 +1,6 @@
 import { PrismaClient } from "../../generated/prisma";
 import { checkRequest } from "./api-utils";
+import bcrypt from "bcrypt";
 import cookie from "cookie";
 
 const prisma = new PrismaClient();
@@ -36,7 +37,8 @@ export default async function handler(req, res) {
         message: "사용자를 찾을 수 없습니다.",
       });
     }
-    if (password !== user.password) {
+    const checkpassword = await bcrypt.compare(password, user.password);
+    if (!checkpassword) {
       return res.status(401).json({
         success: false,
         message: "비밀번호가 일치 하지 않습니다.",
@@ -63,5 +65,7 @@ export default async function handler(req, res) {
       success: false,
       message: "서버 오류가 발생했습니다.",
     });
+  } finally {
+    await prisma.$disconnect(); // db 연결 메모리 누수 방지
   }
 }
