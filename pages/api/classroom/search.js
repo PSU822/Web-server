@@ -1,5 +1,5 @@
-import { PrismaClient } from "../../generated/prisma";
-import { checkRequest } from "./api-utils";
+import { PrismaClient } from "../../../generated/prisma";
+import { checkRequest } from "../api-utils";
 
 const prisma = new PrismaClient();
 
@@ -13,33 +13,43 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { date, time } = req.query;
+  const { building, date, time } = req.query;
 
-  if (!date || !time) {
+  if (!building || !date || !time) {
     return res.status(400).json({
       success: false,
-      message: "날짜, 시각은 필수 항목입니다.",
+      message: "건물, 날짜, 시각은 필수 항목입니다.",
     });
   }
 
   try {
-    // 지금 시간에 강의가 없는 강의실들 조회
+    const timeDate = new Date(`1970-01-01T${time}`);
+
     const availableRooms = await prisma.lecture_room.findMany({
       where: {
-        NOT: {
-          lecture_schedule: {
-            some: {
-              day_of_week: date,
-              start_time: { lte: time },
-              end_time: { gt: time },
-            },
+        building: building, // 해당 건물만
+        lecture_schedule: {
+          none: {
+            // 스케줄이 없는 강의실들만
+            weekday: date,
+            start_time: { lte: timeDate },
+            end_time: { gt: timeDate },
           },
         },
       },
+      select: {
+        classId: true,
+        room: true,
+        floor: true,
+        capacity: true,
+      },
+      orderBy: [{ floor: "asc" }, { room: "asc" }],
     });
 
     return res.status(200).json({
       success: true,
+      building: building,
+      searchTime: time,
       availableRooms: availableRooms,
       count: availableRooms.length,
     });

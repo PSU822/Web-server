@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       "Set-Cookie",
       cookie.serialize("userId", user.user_id, {
         httpOnly: true,
-        maxAge: 60 * 15, // 15분
+        maxAge: 60 * 60 * 1000, // 1시간
         path: "/",
         secure: true,
         sameSite: "strict",
